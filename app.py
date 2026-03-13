@@ -16,8 +16,10 @@ if "active_view" not in st.session_state:
 
 # 2. Kết nối Google Sheets và tải dữ liệu
 conn = st.connection("gsheets", type=GSheetsConnection)
-df = conn.read()
-
+# Local
+# df = conn.read()
+# Cloud
+df = conn.read(spreadsheet=st.secrets["spreadsheet"])
 # 3. Làm sạch và xử lý dữ liệu
 date_columns = ['Thời hạn hoàn thành', 'Ngày hiện tại', 'Ngày hoàn thành thực tế']
 for col in date_columns:
