@@ -43,9 +43,32 @@ with col1:
             color='Đơn vị chủ trì',
             title="Workload per Department"
         )
+        fig_bar.update_xaxes(title_text=None)
         st.plotly_chart(fig_bar, use_container_width=True)
 
 with col2:
+    st.markdown("### 🏢 Tasks by Leader")
+    if 'Lãnh đạo phụ trách' in df.columns:
+        # Count tasks per department
+        dept_counts = df['Lãnh đạo phụ trách'].value_counts().reset_index()
+        dept_counts.columns = ['Lãnh đạo phụ trách', 'Số lượng công việc']
+        
+        # Draw Bar Chart
+        fig_bar = px.bar(
+            dept_counts, 
+            x='Lãnh đạo phụ trách', 
+            y='Số lượng công việc',
+            color='Lãnh đạo phụ trách',
+            title="Workload per Department"
+        )
+        fig_bar.update_xaxes(title_text=None)
+        st.plotly_chart(fig_bar, use_container_width=True)
+
+# --- NEW SECTION: Show Details Below the Charts ---
+st.divider()
+
+col3, col4 = st.columns(2)
+with col3:
     st.markdown("### ⏳ Task Status (Days Remaining)")
     if 'Thời hạn còn lại' in df.columns:
         
@@ -85,36 +108,34 @@ with col2:
         # Capture the click event. This works flawlessly on Bar charts.
         status_event = st.plotly_chart(fig_status, use_container_width=True, on_select="rerun")
 
-# --- NEW SECTION: Show Details Below the Charts ---
-st.divider()
-
 # 1. (Optional) Uncomment the line below if you ever need to debug and see exactly what the click sends!
 # st.write(pie_event.selection) 
 
 # 2. Check if the user clicked on a slice
-if status_event and len(status_event.selection.points) > 0:
-    
-    # For Bar charts, Plotly returns the clicked category perfectly in the "x" key!
-    selected_status = status_event.selection.points[0]["x"]
-    
-    st.markdown(f"### 🔍 Detailed Tasks: **{selected_status}**")
-    
-    # Filter the dataframe
-    filtered_df = df[df['Trạng thái'] == selected_status]
-    
-    display_columns = [
-        'Nội dung công việc', 
-        'Lãnh đạo phụ trách',
-        'Chuyên viên tham mưu trực tiếp', 
-        'Thời hạn hoàn thành', 
-        'Thời hạn còn lại'
-    ]
-    
-    existing_cols = [col for col in display_columns if col in filtered_df.columns]
-    
-    st.dataframe(filtered_df[existing_cols], use_container_width=True)
-else:
-    st.info("👆 Click directly on a colored bar in the Task Status chart above to see the specific tasks here.")
+with col4:
+    if status_event and len(status_event.selection.points) > 0:
+        
+        # For Bar charts, Plotly returns the clicked category perfectly in the "x" key!
+        selected_status = status_event.selection.points[0]["x"]
+        
+        st.markdown(f"### 🔍 Detailed Tasks: **{selected_status}**")
+        
+        # Filter the dataframe
+        filtered_df = df[df['Trạng thái'] == selected_status]
+        
+        display_columns = [
+            'Nội dung công việc', 
+            'Lãnh đạo phụ trách',
+            'Chuyên viên tham mưu trực tiếp', 
+            'Thời hạn hoàn thành', 
+            'Thời hạn còn lại'
+        ]
+        
+        existing_cols = [col for col in display_columns if col in filtered_df.columns]
+        
+        st.dataframe(filtered_df[existing_cols], use_container_width=True)
+    else:
+        st.info("👈 Click directly on a colored bar in the Task Status chart left to see the specific tasks here.")
 
 
 st.divider()
@@ -129,7 +150,7 @@ if 'Nội dung công việc' in df.columns and 'Ngày hiện tại' in df.column
         timeline_df, 
         x_start="Ngày hiện tại", 
         x_end="Thời hạn hoàn thành", 
-        y="Nội dung công việc",
+        y="Thời hạn còn lại",
         color="Chuyên viên tham mưu trực tiếp",
         title="Task Deadlines and Assignees"
     )
