@@ -79,19 +79,25 @@ col1, col2 = st.columns(2)
 with col1:
     st.markdown("### 🏢 Công việc theo Đơn vị chủ trì")
     if 'Đơn vị chủ trì' in df.columns:
-        dept_counts = df['Đơn vị chủ trì'].value_counts().reset_index()
-        dept_counts.columns = ['Đơn vị chủ trì', 'Số lượng công việc']
+        # dept_counts = df['Đơn vị chủ trì'].value_counts().reset_index()
+        # dept_counts.columns = ['Đơn vị chủ trì', 'Số lượng công việc']
+        df_valid = df[df['Trạng thái'] != "Bỏ qua/Văn bản"]
+        dept_counts = df_valid.groupby(['Đơn vị chủ trì', 'Trạng thái']).size().reset_index(name='Số lượng công việc')
         
         fig_bar = px.bar(
             dept_counts, 
             x='Đơn vị chủ trì', 
             y='Số lượng công việc',
-            color='Đơn vị chủ trì',
-            title="Nhấn vào cột của Đơn vị để xem chi tiết!"
+            color='Trạng thái',
+            title="Nhấn vào cột của Đơn vị để xem chi tiết!",
+            barmode='stack',
+            color_discrete_map={
+                'Quá hạn': '#EF4444', 
+                'Sắp đến hạn': '#F59E0B', 
+                'Đúng tiến độ': '#10B981', 
+                'Không rõ': '#9CA3AF'
+            }
         )
-        fig_bar.update_xaxes(title_text=None)
-        fig_bar.update_layout(showlegend=False) 
-        
         dept_event = st.plotly_chart(fig_bar, use_container_width=True, on_select="rerun")
 
 with col2:
@@ -114,7 +120,6 @@ with col2:
                 'Không rõ': '#9CA3AF'
             }
         )
-        fig_bar_leader.update_xaxes(title_text=None)
         leader_event = st.plotly_chart(fig_bar_leader, use_container_width=True, on_select="rerun")
 
 
